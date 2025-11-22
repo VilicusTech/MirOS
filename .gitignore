@@ -1,0 +1,3 @@
+bin/ # All binary files
+obj/ # All Object files
+*.iso # All ISO files
