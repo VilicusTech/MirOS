@@ -5,6 +5,9 @@
 #include <fb.h>
 #include <terminal.h>
 #include <serial.h>
+#include <panic.h>
+
+#define DEBUG(msg) serial_write("[DEBUG] "); serial_write(msg); serial_write("\n")
 
 // Set the base revision to 4, this is recommended as this is the latest
 // base revision descibed by the limine boot protocol specification.
@@ -99,6 +102,10 @@ static void hcf(void) {
     }
 }
 
+if (fb_ptr == NULL)
+    PANIC("null pointer detected: %p", fb_ptr);
+
+
 void _start(void) {
     // Ensure the bootloadeer actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
@@ -113,12 +120,15 @@ void _start(void) {
     
     struct limine_framebuffer *fb_ptr =
         framebuffer_request.response->framebuffers[0];
+    
 
     fb_init(fb_ptr);
     term_init();
 
     serial_init();
     serial_write("Serial worky! :3\n");
+    
+    DEBUG("Debugging :3");
 
     term_print("Hello from MirOS! :3\n");
 
