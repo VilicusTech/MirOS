@@ -102,10 +102,6 @@ static void hcf(void) {
     }
 }
 
-if (fb_ptr == NULL)
-    PANIC("null pointer detected: %p", fb_ptr);
-
-
 void _start(void) {
     // Ensure the bootloadeer actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
@@ -131,6 +127,9 @@ void _start(void) {
     DEBUG("Debugging :3");
 
     term_print("Hello from MirOS! :3\n");
+
+    if (fb_ptr == NULL)
+        PANIC("null pointer detected: %p", fb_ptr);
 
     for (;;) asm("hlt");
 }

@@ -3,10 +3,11 @@
 #include <panic.h>
 #include <serial.h>
 #include <fb.h>
+#include <terminal.h>
 
 static void panic_putc(char c) {
-    fb_putc(c);
-    serial_write(c);
+    term_putchar(c);
+    serial_write_char(c);
 }
 
 static void panic_vprint(const char *fmt, va_list args) {
@@ -49,33 +50,33 @@ static void panic_vprint(const char *fmt, va_list args) {
         }
     }
 
-    buf[i] = '\0'
+    buf[i] = '\0';
 
     for (int j = 0; buf[j]; j++)
         panic_putc(buf[j]);
 }
 
 noreturn void panic(const char *fmt, ...) {
-    serial_write_str("\n\n !!! PANIC !!!\n");
-    fb_write_str("\n\nKERNEL PANIC: ");
+    serial_write("\n\n !!! PANIC !!!\n");
+    term_print("\n\nKERNEL PANIC: ");
 
     va_list args;
     va_start(args, fmt);
-    panic_vprintf(fmt, args);
+    panic_vprint(fmt, args);
     va_end(args);
 
-    serial_write_str("\nSystem halted.\n");
-    fb_write_str("\nHALTING.\n");
+    serial_write("\nSystem halted.\n");
+    term_print("\nHALTING.\n");
 
     for (;;) __asm__("hlt");
 }
 
 noreturn void panic_early(const char *msg) {
-    serial_write_str("EARLY PANIC: ");
-    serial_write_str(msg);
+    serial_write("EARLY PANIC: ");
+    serial_write(msg);
 
-    fb_write_str("EARLY PANIC: ");
-    fb_write_str(msg);
+    term_print("EARLY PANIC: ");
+    term_print(msg);
 
     for (;;) __asm__("hlt");
 }
