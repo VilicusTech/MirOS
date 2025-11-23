@@ -2,6 +2,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <limine.h>
+#include <fb.h>
+#include <terminal.h>
+#include <serial.h>
 
 // Set the base revision to 4, this is recommended as this is the latest
 // base revision descibed by the limine boot protocol specification.
@@ -96,30 +99,28 @@ static void hcf(void) {
     }
 }
 
-// The following will be our kernel's entry point.
-// If renaming kmain() to something else, make sure to change the
-// linker script according.
-void kmain(void) {
+void _start(void) {
     // Ensure the bootloadeer actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hcf();
-    }
-
+    }  
+    
     // Ensure we got a framebuffer.
     if (framebuffer_request.response == NULL
      || framebuffer_request.response->framebuffer_count < 1) {
         hcf();
-    }
+    }    
+    
+    struct limine_framebuffer *fb_ptr =
+        framebuffer_request.response->framebuffers[0];
 
-    // Fetch the first framebuffer.
-    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+    fb_init(fb_ptr);
+    term_init();
 
-    // Note: we assume the framebuffer model is RGB with 32-bit pixels.
-    for (size_t i = 0; i < 100; i++) {
-        volatile uint32_t *fb_ptr = framebuffer->address;
-        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
-    }
+    serial_init();
+    serial_write("Serial worky! :3\n");
 
-    // We're done
-    hcf();
+    term_print("Hello from MirOS! :3\n");
+
+    for (;;) asm("hlt");
 }
